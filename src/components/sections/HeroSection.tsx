@@ -48,8 +48,12 @@ interface PortraitProps {
   sizeMode?: "fill" | "natural";
   /** CSS object-position, only used when fit="cover". e.g. "50% 15%" */
   objectPosition?: string;
+  /** Extra zoom on top of object-cover, e.g. 1.3 = 30% closer.
+   *  This is what actually makes the subject bigger in frame — object-cover
+   *  alone only guarantees the container is filled, it won't zoom past that. */
+  zoom?: number;
 }
-function Portrait({ smoothMouseX, smoothMouseY, scrollParallaxY, mask, fit = "contain", sizeMode = "fill", objectPosition }: PortraitProps) {
+function Portrait({ smoothMouseX, smoothMouseY, scrollParallaxY, mask, fit = "contain", sizeMode = "fill", objectPosition, zoom = 1 }: PortraitProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [loaded, setLoaded] = useState(false);
   const shouldReduce = useReducedMotion();
@@ -87,6 +91,7 @@ function Portrait({ smoothMouseX, smoothMouseY, scrollParallaxY, mask, fit = "co
           style={{
             filter: "brightness(1.06) contrast(1.08)",
             ...(objectPosition ? { objectPosition } : {}),
+            ...(zoom !== 1 ? { transform: `scale(${zoom})`, transformOrigin: objectPosition || "50% 50%" } : {}),
           }}
           onLoad={() => setLoaded(true)}
           loading="eager"
@@ -263,6 +268,7 @@ export default function HeroSection() {
               mask={FADE_MASK_MOBILE}
               fit="cover"
               objectPosition="50% 20%"
+              zoom={1.3}
             />
           </motion.div>
 
