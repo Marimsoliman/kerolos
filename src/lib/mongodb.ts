@@ -1,11 +1,5 @@
 import mongoose, { Mongoose } from "mongoose";
 
-if (!process.env.MONGODB_URI) {
-  throw new Error("Please add MONGODB_URI to .env.local");
-}
-
-const MONGODB_URI = process.env.MONGODB_URI;
-
 let cached = (global as any).mongoose as {
   conn: Mongoose | null;
   promise: Promise<Mongoose> | null;
@@ -16,6 +10,12 @@ if (!cached) {
 }
 
 async function dbConnect(): Promise<Mongoose> {
+  const MONGODB_URI = process.env.MONGODB_URI;
+
+  if (!MONGODB_URI) {
+    throw new Error("Please add MONGODB_URI to .env.local");
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
