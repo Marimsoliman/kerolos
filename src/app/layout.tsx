@@ -40,26 +40,10 @@ const inter = localFont({
   display: "swap",
   preload: true,
 });
-
 export const metadata: Metadata = {
   title: "Kerolos - Creative Portfolio",
   description: "Premium portfolio showcasing creative work",
-  // ✅ إضافة الـ Favicon Icons
-  icons: {
-    icon: [
-      { url: '/favicon.ico' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-    other: [
-      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
-  },
-  manifest: '/site.webmanifest',
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -70,6 +54,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} bg-black`}>
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon-96x96.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
         {/* Critical CSS للخلفية السوداء فوراً */}
         <style dangerouslySetInnerHTML={{
           __html: `
@@ -80,7 +69,6 @@ export default function RootLayout({
               min-height: 100vh;
             }
             
-            /* الخلفية السينمائية الثابتة */
             body::before {
               content: '';
               position: fixed;
@@ -91,7 +79,6 @@ export default function RootLayout({
               pointer-events: none;
             }
             
-            /* منع أي فلاش أبيض */
             *:not(img):not(svg):not(video) {
               background-color: transparent;
             }
