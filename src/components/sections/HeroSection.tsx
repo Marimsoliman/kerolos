@@ -248,8 +248,8 @@ export default function HeroSection() {
           <motion.div
             className="overflow-hidden mt-10"
             style={{
-              width: "100vw",
-              height: "72vh",
+              width: "110vw",
+              height: "92vh",
               minHeight: "460px",
               marginLeft: "calc(-50vw + 50%)", // full-bleed edge to edge
             }}

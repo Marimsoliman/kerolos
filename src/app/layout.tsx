@@ -4,6 +4,7 @@ import "./globals.css";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";
+import ScrollProgressBar from "@/components/ScrollProgressBar";
 
 import localFont from "next/font/local";
 import { CINEMATIC_BG } from "@/lib/theme";
@@ -82,10 +83,23 @@ export default function RootLayout({
             *:not(img):not(svg):not(video) {
               background-color: transparent;
             }
+
+            /* Hide the native browser scrollbar — replaced by
+               <ScrollProgressBar /> below, which renders a clean
+               full-height indicator instead of the short/cropped-
+               looking default thumb. */
+            html {
+              scrollbar-width: none;
+              -ms-overflow-style: none;
+            }
+            html::-webkit-scrollbar {
+              display: none;
+            }
           `
         }} />
       </head>
       <body className="bg-black font-sans antialiased">
+        <ScrollProgressBar />
         <CartProvider>
           <div className="flex min-h-screen flex-col">
             <Navigation />
