@@ -209,9 +209,9 @@ export default function HeroSection() {
           <motion.div 
             className="overflow-hidden mt-20"
             style={{
-              width: "115vw",
-              height: "90vh",
-              minHeight: "680px",
+              width: "150vw",
+              height: "110vh",
+              minHeight: "700px",
               marginLeft: "calc(-50vw + 50%)",
             }}
             initial={{ opacity: 0 }} 
