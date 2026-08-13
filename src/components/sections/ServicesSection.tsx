@@ -31,16 +31,16 @@ type Service = {
 
 const services: Service[] = [
   {
-    number: "01",
-    title: "Brand Identity\nDesigner",
-    description:
-      "I transform ideas into distinctive brand identities that feel clear, intentional, and impossible to ignore. From the first concept to the final visual system, I create brands that look consistent and communicate clearly.",
-    tagline: "VISUAL SYSTEM",
-    image: "/images/media/brand-identity.gif",
-    metrics: ["Logo Systems", "Typography", "Color Architecture"],
-    accent: "#8B5CF6",
-    isGif: true,
-  },
+  number: "01",
+  title: "Brand Identity\nDesigner",
+  description:
+    "I transform ideas into distinctive brand identities that feel clear, intentional, and impossible to ignore. From the first concept to the final visual system, I create brands that look consistent and communicate clearly.",
+  tagline: "VISUAL SYSTEM",
+  image: "/images/media/brand-identity.webm",
+  metrics: ["Logo Systems", "Typography", "Color Architecture"],
+  accent: "#8B5CF6",
+  isGif: true,
+},
   {
     number: "02",
     title: "Creative\nDirector",
@@ -351,17 +351,28 @@ function StackedPanel({ service, index }: { service: Service; index: number }) {
           minHeight: "220px",
         }}
       >
-        <Image
-          src={service.image}
-          alt={service.title.replace("\n", " ")}
-          fill
-          className={service.isGif ? "object-cover" : "object-contain"}
-          sizes="(max-width: 768px) 100vw, 52vw"
-          loading={index === 0 ? "eager" : "lazy"}
-          priority={index === 0}
-          quality={90}
-          unoptimized={service.isGif}
-        />
+        {service.isGif ? (
+  <video
+    src={service.image}
+    autoPlay
+    loop
+    muted
+    playsInline
+    preload="auto"
+    className="absolute inset-0 h-full w-full object-cover"
+  />
+) : (
+  <Image
+    src={service.image}
+    alt={service.title.replace("\n", " ")}
+    fill
+    className="object-contain"
+    sizes="(max-width: 768px) 100vw, 52vw"
+    loading={index === 0 ? "eager" : "lazy"}
+    priority={index === 0}
+    quality={90}
+  />
+)}
       </div>
 
       {/* ── Content side ── */}
@@ -441,6 +452,17 @@ function Header() {
 // where the layout is flex-row), and the card gets a taller cap
 // on small screens so the text has room to breathe. The GSAP
 // pin/scrub/scroll-distance logic above is untouched.
+//
+// FIX 2: this panel was rendering EVERY service — including the
+// isGif: true video service — through next/image's <Image>
+// component with unoptimized={service.isGif}. next/image only
+// knows how to handle actual image formats (png/jpg/webp/gif as
+// a static image); it cannot render a .webm video file at all,
+// so the "unoptimized" flag did nothing useful and the video
+// silently failed to render. The in-app-browser fallback
+// (StackedPanel below) already branched to a real <video> tag
+// for isGif services — this panel just never had that branch.
+// Now it does, matching StackedPanel exactly.
 // ==========================================
 function HPanel({
   service,
@@ -478,17 +500,28 @@ function HPanel({
             className="absolute inset-0"
             style={{ contain: "strict" }}
           >
-            <Image
-              src={service.image}
-              alt={service.title.replace("\n", " ")}
-              fill
-              className={service.isGif ? "object-cover" : "object-contain"}
-              sizes="(max-width: 768px) 100vw, 58vw"
-              loading={index === 0 ? "eager" : "lazy"}
-              priority={index === 0}
-              quality={90}
-              unoptimized={service.isGif}
-            />
+            {service.isGif ? (
+              <video
+                src={service.image}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : (
+              <Image
+                src={service.image}
+                alt={service.title.replace("\n", " ")}
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 58vw"
+                loading={index === 0 ? "eager" : "lazy"}
+                priority={index === 0}
+                quality={90}
+              />
+            )}
           </div>
         </div>
 
