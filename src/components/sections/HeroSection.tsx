@@ -124,7 +124,16 @@ export default function HeroSection() {
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 90% 70% at 50% 50%, #0c0a14 0%, #06050a 60%, #030304 100%)" }} />
         <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 15% 15%, rgba(168,85,247,0.3), transparent 45%), radial-gradient(circle at 70% 55%, rgba(139,92,246,0.35), transparent 50%)` }} />
         <GridTexture />
-        <motion.div className="absolute z-[2]" style={{ right: "-100px", top: "50%", width: "1000px", height: "1000px", borderRadius: "9999px", background: "radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 80%)", filter: "blur(180px)", x: glowX, y: glowY, marginTop: "-500px" }} animate={{ scale: [1, 1.08, 1] }} transition={{ duration: 7, repeat: Infinity }} />
+        <motion.div 
+          className="absolute z-[2] rounded-full w-[500px] h-[500px] right-[-80px] top-[35%] -mt-[250px] blur-[100px] md:w-[1000px] md:h-[1000px] md:right-[-100px] md:top-1/2 md:-mt-[500px] md:blur-[180px]" 
+          style={{ 
+            background: "radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 80%)", 
+            x: glowX, 
+            y: glowY,
+          }} 
+          animate={{ scale: [1, 1.08, 1] }} 
+          transition={{ duration: 7, repeat: Infinity }} 
+        />
         <VignetteOverlay />
         <FilmGrainOverlay />
       </div>
@@ -195,9 +204,9 @@ export default function HeroSection() {
           </motion.div>
         </div>
  
-       {/* MOBILE - wide crop showing shoulders only */}
+        {/* MOBILE - wide crop showing shoulders only */}
         <div className="md:hidden flex flex-col items-center text-center min-h-screen pt-0 pb-8">
-         <motion.div 
+          <motion.div 
             className="overflow-hidden mt-20"
             style={{
               width: "115vw",
@@ -267,4 +276,3 @@ export default function HeroSection() {
     </section>
   );
 }
- 
