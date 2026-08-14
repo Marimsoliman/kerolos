@@ -15,15 +15,20 @@ const items = [
 export default function MarqueeSection() {
   return (
     <section
-      className="relative overflow-hidden select-none flex items-center"
+      // Negative top margin pulls this section up, closing the gap left by
+      // the hero (which currently renders taller than the viewport on
+      // mobile/tablet because of the portrait's mt/height offsets). Tweak
+      // the -38vh / -28vh numbers directly if it needs to be closer/further.
+      className="relative overflow-hidden select-none flex items-center
+                 mt-[-vh] sm:mt-[-42vh] md:mt-0"
       aria-hidden="true"
       style={{
-  background: "#000000",
-  borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
-  height: "62px",
-  boxShadow:
-    "inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0, 0, 0, 0.4)",
-}}
+        background: "#000000",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
+        height: "62px",
+        boxShadow:
+          "inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0, 0, 0, 0.4)",
+      }}
     >
       {/* ✨ Fade ناعم على الأطراف */}
       <div

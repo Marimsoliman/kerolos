@@ -106,7 +106,7 @@ export default function ScrollTextReveal() {
   // النص — استخدم \n\n للفقرات الجديدة
   // ═══════════════════════════════════════════════════════
   const text =
-    "A powerful brand is more than a logo—it's an identity that inspires trust, creates lasting impact, and connects with your audience. If your vision is to build a brand that elevates your business and leaves a memorable impression on your customers, we're here to bring that vision to life.\n\nWith an uncompromising commitment to quality, we craft distinctive brand identities that stand the test of time. Explore some of our featured work below and discover how we've helped our clients shape brands that truly stand out.";
+    "If your vision is to build a brand that elevates your business and leaves a lasting impression on your customers, we’re here to bring that vision to life.Explore some of our featured work below and discover how we’ve helped our clients build brands that leave a lasting impact.";
 
   const tokens = useMemo(() => tokenize(text), [text]);
 

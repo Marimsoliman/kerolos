@@ -16,8 +16,24 @@ import {
 const PORTRAIT_SRC = "/images/kairos-portofolio4.png";
 const FADE_MASK =
   "linear-gradient(to bottom, #000 0%, #000 94%, rgba(0,0,0,0.7) 97%, transparent 100%)";
-const FADE_MASK_MOBILE =
-  "linear-gradient(to bottom, #000 0%, #000 90%, rgba(0,0,0,0.5) 96%, transparent 100%)";
+
+// ─────────────────────────────────────────────────────────────
+// TUNE HERE: single control point for how far the text column
+// sits below the top of the hero. Uses clamp(min, preferred, max)
+// so it scales proportionally with viewport height (vh) on every
+// breakpoint — no separate sm/md/lg magic numbers to keep in sync,
+// and no risk of the text drifting into the navbar on short screens.
+//   min  -> floor distance from the top (navbar safety)
+//   14vh -> proportional offset that tracks the portrait's height
+//   max  -> ceiling so very tall viewports don't push it too far
+// Nudge the "14vh" value up/down to fine-tune against the actual
+// portrait image once you see it rendered. The vertical gaps between
+// the eyebrow/headline/paragraph/CTA blocks below were tightened by
+// a matching amount so pushing this offset down doesn't grow the
+// overall hero height — the whole block shifts down as a unit
+// instead of stretching taller.
+// ─────────────────────────────────────────────────────────────
+const HERO_TEXT_OFFSET = "clamp(72px, 14vh, 160px)";
 
 function ArrowRightIcon({ className = "" }: { className?: string }) {
   return (
@@ -40,41 +56,27 @@ interface PortraitProps {
   smoothMouseX?: MotionValue<number>;
   smoothMouseY?: MotionValue<number>;
   scrollParallaxY?: MotionValue<number>;
-  mask?: string;
-  fit?: "contain" | "cover";
-  /** "fill" = fills a fixed-height parent box (desktop).
-   *  "natural" = the image dictates its own height at its true aspect
-   *  ratio, so nothing is ever cropped or squeezed — used on mobile. */
-  sizeMode?: "fill" | "natural";
-  /** CSS object-position, only used when fit="cover". e.g. "50% 15%" */
-  objectPosition?: string;
-  /** Extra zoom on top of object-cover, e.g. 1.3 = 30% closer.
-   *  This is what actually makes the subject bigger in frame — object-cover
-   *  alone only guarantees the container is filled, it won't zoom past that. */
-  zoom?: number;
 }
-function Portrait({ smoothMouseX, smoothMouseY, scrollParallaxY, mask, fit = "contain", sizeMode = "fill", objectPosition, zoom = 1 }: PortraitProps) {
+function Portrait({ smoothMouseX, smoothMouseY, scrollParallaxY }: PortraitProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [loaded, setLoaded] = useState(false);
   const shouldReduce = useReducedMotion();
   useEffect(() => { if (imgRef.current?.complete && imgRef.current?.naturalWidth) setLoaded(true); }, []);
-  const tx = useTransform(smoothMouseX || useMotionValue(0), [-0.5, 0.5], shouldReduce ? [0, 0] : [-8, 8]);
-  const ty = useTransform(smoothMouseY || useMotionValue(0), [-0.5, 0.5], shouldReduce ? [0, 0] : [-6, 6]);
-
-  const isNatural = sizeMode === "natural";
+  const tx = useTransform(smoothMouseX || useMotionValue(0), [-0.5, 0.5], shouldReduce ? [0, 0] : [-12, 12]);
+  const ty = useTransform(smoothMouseY || useMotionValue(0), [-0.5, 0.5], shouldReduce ? [0, 0] : [-8, 8]);
 
   return (
     <motion.div
       style={{ y: scrollParallaxY || 0, x: tx, translateY: ty }}
-      className={`relative w-full pointer-events-none select-none ${isNatural ? "" : "h-full"}`}
+      className="relative w-full h-full pointer-events-none select-none"
     >
       <div
-        className={`relative w-full overflow-hidden ${isNatural ? "" : "h-full"}`}
+        className="relative w-full h-full"
         style={{
           opacity: loaded ? 1 : 0,
           transition: "opacity 1s",
-          WebkitMaskImage: mask || FADE_MASK,
-          maskImage: mask || FADE_MASK
+          WebkitMaskImage: FADE_MASK,
+          maskImage: FADE_MASK
         }}
       >
         <img
@@ -83,16 +85,8 @@ function Portrait({ smoothMouseX, smoothMouseY, scrollParallaxY, mask, fit = "co
           alt=""
           width={1200}
           height={1600}
-          className={
-            isNatural
-              ? "w-full h-auto block" // true aspect ratio, no crop, no stretch
-              : `w-full h-full ${fit === "cover" ? "object-cover" : "object-contain"} ${objectPosition ? "" : "object-top"}`
-          }
-          style={{
-            filter: "brightness(1.06) contrast(1.08)",
-            ...(objectPosition ? { objectPosition } : {}),
-            ...(zoom !== 1 ? { transform: `scale(${zoom})`, transformOrigin: objectPosition || "50% 50%" } : {}),
-          }}
+          className="w-full h-full object-contain object-bottom"
+          style={{ filter: "brightness(1.06) contrast(1.08)" }}
           onLoad={() => setLoaded(true)}
           loading="eager"
         />
@@ -128,16 +122,10 @@ export default function HeroSection() {
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const smoothScrollY = useSpring(scrollYProgress, { stiffness: 60, damping: 20 });
-  const portraitScrollY = useTransform(smoothScrollY, [0, 1], [0, shouldReduce ? 0 : 80]);
+  const portraitScrollY = useTransform(smoothScrollY, [0, 1], [0, shouldReduce ? 0 : 120]);
 
-  // Desktop: fade the left text column out as you scroll past the hero.
-  const contentOpacityDesktop = useTransform(smoothScrollY, [0, 0.45], [1, 0]);
-  const contentYDesktop = useTransform(smoothScrollY, [0, 1], [0, shouldReduce ? 0 : 90]);
-
-  // Mobile: fade out much later (near the very end of the hero) so there's
-  // time to actually read the heading/paragraph before it disappears.
-  const contentOpacityMobile = useTransform(smoothScrollY, [0.75, 1], [1, 0]);
-  const contentYMobile = useTransform(smoothScrollY, [0.75, 1], [0, shouldReduce ? 0 : 40]);
+  const contentOpacity = useTransform(smoothScrollY, [0.4, 0.8], [1, 0]);
+  const contentY = useTransform(smoothScrollY, [0.4, 0.8], [0, shouldReduce ? 0 : 80]);
 
   const glowX = useTransform(smoothMouseX, [-0.5, 0.5], [-30, 30]);
   const glowY = useTransform(smoothMouseY, [-0.5, 0.5], [-20, 20]);
@@ -145,185 +133,123 @@ export default function HeroSection() {
   const headingWords = ["Building", "Impactful", "Digital", "Experiences"];
 
   return (
-    <section ref={sectionRef} onMouseMove={handleMouseMove} className="relative w-full min-h-screen bg-[#050505]">
+    <section ref={sectionRef} onMouseMove={handleMouseMove} className="relative w-full min-h-[85vh] bg-[#050505] overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse 90% 70% at 50% 50%, #0c0a14 0%, #06050a 60%, #030304 100%)" }} />
         <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 15% 15%, rgba(168,85,247,0.3), transparent 45%), radial-gradient(circle at 70% 55%, rgba(139,92,246,0.35), transparent 50%)` }} />
         <GridTexture />
-        {/* Purple glow blob — sits above the background but BELOW the portrait (z-2 vs portrait's z-10),
-            so on mobile it must have room to breathe around/behind the portrait image. */}
         <motion.div
-          className="absolute z-[2] rounded-full w-[380px] h-[380px] right-[-60px] top-[6%] blur-[90px] md:w-[1000px] md:h-[1000px] md:right-[-100px] md:top-1/2 md:-mt-[500px] md:blur-[180px]"
+          className="absolute z-[2] rounded-full w-[85vw] h-[85vw] right-[-25vw] top-[18%] blur-[70px]
+                     sm:w-[600px] sm:h-[600px] sm:right-[-120px] sm:top-[20%] sm:blur-[110px]
+                     md:w-[1000px] md:h-[1000px] md:right-[-100px] md:top-1/2 md:-mt-[500px] md:blur-[180px]"
           style={{
-            background: "radial-gradient(circle, rgba(139,92,246,0.55) 0%, transparent 80%)",
+            background: "radial-gradient(circle, rgba(139,92,246,0.55) 0%, transparent 75%)",
             x: glowX,
             y: glowY,
           }}
           animate={{ scale: [1, 1.08, 1] }}
           transition={{ duration: 7, repeat: Infinity }}
         />
-        {/* second, softer glow lower down so it reads behind the mobile text block too */}
-        <div
-          className="absolute md:hidden z-[2] rounded-full w-[320px] h-[320px] left-[-80px] bottom-[6%] blur-[90px]"
-          style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 75%)" }}
-        />
         <VignetteOverlay />
         <FilmGrainOverlay />
       </div>
 
-      <div className="relative z-10 w-full max-w-[1440px] mx-auto px-5 sm:px-8 md:px-12 lg:px-20">
-        {/* DESKTOP + TABLET */}
+      {/*
+        Row container: switched from `items-center` to `items-start`.
+        Under `items-center`, any padding/margin we add to the text
+        column gets visually halved (the browser centers the box
+        including its own spacing), which is why previous pt-* bumps
+        barely moved anything. `items-start` + an explicit margin-top
+        on the text column below gives full, predictable 1:1 control.
+      */}
+      <div className="relative z-10 w-full max-w-[1440px] mx-auto px-5 sm:px-8 md:px-12 lg:px-20 min-h-[85vh] flex items-start">
+        {/* TEXT CONTENT — vertically aligned to shoulder/upper-chest level of the portrait */}
         <motion.div
-          className="hidden md:grid md:grid-cols-[42%_58%] items-center min-h-screen"
-          style={{ opacity: contentOpacityDesktop, y: contentYDesktop }}
+          className="relative z-10 w-full max-w-[600px] lg:max-w-[520px]"
+          style={{ opacity: contentOpacity, y: contentY, marginTop: HERO_TEXT_OFFSET }}
         >
-          <div className="flex flex-col justify-center py-[120px] pr-6">
+          <motion.div custom={0.15} variants={fadeUpVariants} initial="hidden" animate="visible" className="mb-3 sm:mb-4 md:mb-6">
+            <span className="text-[10px] sm:text-[11px] md:text-[12px] tracking-[0.2em] uppercase text-white/50">
+              Full Stack Developer • Graphic Designer
+            </span>
+          </motion.div>
 
-            <motion.div custom={0.15} variants={fadeUpVariants} initial="hidden" animate="visible" className="mb-8">
-              <span className="text-[11px] tracking-[0.22em] uppercase text-white/50">Full Stack Developer • Graphic Designer</span>
-            </motion.div>
-
-            <div className="mb-8 flex flex-col">
-              {headingWords.map((word, i) => (
-                <div key={word} className="overflow-hidden py-1">
-                  <motion.span
-                    custom={i}
-                    variants={wordVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="block font-black tracking-[-0.03em]"
-                    style={{
-                      fontSize: "clamp(44px, 5.2vw, 84px)",
-                      lineHeight: "1.15",
-                      paddingBottom: "0.18em",
-                      marginBottom: "-0.18em",
-                      fontFamily: "var(--font-display)",
-                      ...(word === "Digital"
-                        ? {
-                            background: "linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 55%, #7c3aed 100%)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                          }
-                        : { color: "#fff" }),
-                    }}
-                  >
-                    {word}
-                  </motion.span>
-                </div>
-              ))}
-            </div>
-
-            <motion.p custom={0.8} variants={fadeUpVariants} initial="hidden" animate="visible" className="text-[15px] leading-[1.75] text-white/50 max-w-[460px] mb-10">
-              I design and develop high-performance digital experiences that combine modern design, clean code, and seamless interaction.
-            </motion.p>
-
-            <motion.div custom={1.0} variants={fadeUpVariants} initial="hidden" animate="visible" className="mb-14">
-              <Link href="/contact" className="inline-flex h-[60px] px-9 items-center gap-3 rounded-full border border-[#8b5cf6]/40 text-white hover:bg-[#8b5cf6] transition-all">
-                Let's Build Together <ArrowRightIcon />
-              </Link>
-            </motion.div>
-
-            <div className="flex">
-              {[{ v: "150+", l: "Projects" }, { v: "150+", l: "Clients" }, { v: "5+", l: "Years" }].map((s, i) => (
-                <div key={s.l} className={`px-7 ${i === 0 ? "pl-0" : ""} ${i < 2 ? "border-r border-white/10" : ""}`}>
-                  <div className="text-[28px] font-bold tracking-tight text-[#8B5CF6] drop-shadow-[0_0_12px_rgba(139,92,246,0.35)]">{s.v}</div>
-                  <div className="text-[11px] text-white/40 uppercase tracking-widest mt-1">{s.l}</div>
-                </div>
-              ))}
-            </div>
+          <div className="mb-5 sm:mb-6 md:mb-8 flex flex-col items-start">
+            {headingWords.map((word, i) => (
+              <div key={word} className="overflow-hidden py-1">
+                <motion.span
+                  custom={i}
+                  variants={wordVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="block font-black tracking-[-0.02em] sm:tracking-[-0.03em] text-[clamp(32px,7vw,96px)] leading-[1.1] lg:text-[clamp(40px,4.2vw,68px)] lg:leading-[1.08]"
+                  style={{
+                    paddingBottom: "0.15em",
+                    marginBottom: "-0.15em",
+                    fontFamily: "var(--font-display)",
+                    ...(word === "Digital"
+                      ? {
+                          background: "linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 55%, #7c3aed 100%)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }
+                      : { color: "#fff" }),
+                  }}
+                >
+                  {word}
+                </motion.span>
+              </div>
+            ))}
           </div>
 
-          <motion.div className="relative flex items-end justify-center" style={{ height: "120vh", marginTop: "-9rem" }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2 }}>
-            <div className="w-full h-full">
-              <Portrait smoothMouseX={smoothMouseX} smoothMouseY={smoothMouseY} scrollParallaxY={portraitScrollY} fit="contain" />
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* MOBILE - wide crop showing shoulders only */}
-        <motion.div
-          className="md:hidden flex flex-col items-center text-center min-h-screen pt-0 pb-8"
-          style={{ opacity: contentOpacityMobile, y: contentYMobile }}
-        >
-          <motion.div
-            className="overflow-hidden mt-10"
-            style={{
-              width: "104vw",
-              height: "79vh",
-              minHeight: "460px",
-              marginLeft: "calc(-50vw + 50%)", // full-bleed edge to edge
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+          <motion.p 
+            custom={0.8} 
+            variants={fadeUpVariants} 
+            initial="hidden" 
+            animate="visible" 
+            className="text-[13px] sm:text-[15px] md:text-[17px] leading-[1.7] text-white/60 max-w-[280px] sm:max-w-[340px] md:max-w-[440px] lg:max-w-[400px] mb-6 sm:mb-8 md:mb-10"
           >
-            {/* Framing is controlled by two knobs, no transform/scale needed:
-                1) this container's height above (taller = shows more of the
-                   shoulders/chest, shorter = zooms in tighter on the face)
-                2) objectPosition below — "50% Y%" where a SMALLER Y shows
-                   more hair/top-of-head, a LARGER Y crops higher and shows
-                   more shoulders. Nudge both a few % at a time. */}
-            <Portrait
-              smoothMouseX={smoothMouseX}
-              smoothMouseY={smoothMouseY}
-              mask={FADE_MASK_MOBILE}
-              fit="cover"
-              objectPosition="50% 20%"
-              zoom={1.3}
-            />
+            I design and develop high-performance digital experiences that combine modern design, clean code, and seamless interaction.
+          </motion.p>
+
+          <motion.div custom={1.0} variants={fadeUpVariants} initial="hidden" animate="visible" className="mb-8 sm:mb-10 md:mb-12">
+            <Link href="/contact" className="inline-flex h-[48px] sm:h-[54px] md:h-[62px] px-6 sm:px-8 md:px-10 items-center gap-3 rounded-full border border-[#8b5cf6]/40 text-white hover:bg-[#8b5cf6] transition-all text-[13px] sm:text-[14px] md:text-[15px] font-medium">
+              Let's Build Together <ArrowRightIcon className="w-4 h-4" />
+            </Link>
           </motion.div>
 
-          <div className="mt-6 w-full px-4">
-            <div className="mb-5">
-              <span className="text-[10px] tracking-[0.22em] uppercase text-white/50">Full Stack Developer • Graphic Designer</span>
-            </div>
-
-            <div className="mb-5">
-              {headingWords.map((word, i) => (
-                <div key={word} className="overflow-hidden py-1">
-                  <motion.span
-                    custom={i}
-                    variants={wordVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="block font-black tracking-[-0.03em]"
-                    style={{
-                      fontSize: "clamp(34px, 9vw, 48px)",
-                      lineHeight: "1.1",
-                      paddingBottom: "0.15em",
-                      marginBottom: "-0.15em",
-                      ...(word === "Digital"
-                        ? {
-                            background: "linear-gradient(135deg, #c4b5fd, #8b5cf6)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                          }
-                        : { color: "#fff" }),
-                    }}
-                  >
-                    {word}
-                  </motion.span>
+          <div className="flex gap-8 sm:gap-10 md:gap-12">
+            {[{ v: "150+", l: "Projects" }, { v: "150+", l: "Clients" }, { v: "5+", l: "Years" }].map((s) => (
+              <div key={s.l}>
+                <div className="text-[24px] sm:text-[32px] md:text-[38px] font-bold tracking-tight text-[#8B5CF6] drop-shadow-[0_0_16px_rgba(139,92,246,0.4)]">
+                  {s.v}
                 </div>
-              ))}
-            </div>
-
-            <p className="text-[13px] leading-[1.7] text-white/50 max-w-[340px] mx-auto mb-6">
-              I design and develop high-performance digital experiences that combine modern design, clean code, and seamless interaction.
-            </p>
-
-            <div className="grid grid-cols-3 w-full max-w-[300px] mx-auto mt-2 border-t border-white/10 pt-5">
-              {[{ v: "150+", l: "Projects" }, { v: "150+", l: "Clients" }, { v: "5+", l: "Years" }].map((s,i)=>(
-                <div key={s.l} className={`${i<2?"border-r border-white/10":""}`}>
-                  <div className="text-[22px] font-bold text-[#8B5CF6]">{s.v}</div>
-                  <div className="text-[10px] text-white/40 uppercase">{s.l}</div>
+                <div className="text-[9px] sm:text-[10px] md:text-[11px] text-white/40 uppercase tracking-[0.15em] mt-1">
+                  {s.l}
                 </div>
-              ))}
-            </div>
-
-            <Link href="/contact" className="mt-7 w-full max-w-[300px] inline-flex h-[52px] items-center justify-center gap-3 rounded-full border border-[#8b5cf6]/40 text-white">
-              Let's Build Together <ArrowRightIcon />
-            </Link>
+              </div>
+            ))}
           </div>
         </motion.div>
+
+        {/*
+          LARGE PORTRAIT — anchored bottom-right on mobile/tablet (unchanged).
+          On lg+ desktop only: switched from a bottom-anchored oversized
+          container to a smaller, top-anchored one. `lg:top-[3%]` (raised
+          from the previous 10%) so the portrait's shoulder/chest level
+          lines up with the text column now that HERO_TEXT_OFFSET was
+          also reduced — both moved up together to keep them aligned.
+        */}
+        <div className="absolute z-0 bottom-0 lg:bottom-0 lg:top-[3%] right-[-6%] sm:right-[-5%] md:right-[-2%] lg:right-[0%] w-[95%] sm:w-[85%] md:w-[56%] lg:w-[46%] h-[96vh] sm:h-[96vh] md:h-[150vh] lg:h-auto pointer-events-none">
+          <motion.div
+            className="relative w-full h-full"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Portrait smoothMouseX={smoothMouseX} smoothMouseY={smoothMouseY} scrollParallaxY={portraitScrollY} />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
