@@ -522,7 +522,7 @@ export default function AboutPageContent() {
               >
                 <div className="aspect-[4/5] overflow-hidden border-b border-white/10 relative">
                   <motion.img
-                    src="/images/Graphic.png"
+                    src="/images/Graphic.jpeg"
                     alt="Graphic Designer"
                     className="w-full h-full object-cover"
                     whileHover={{ scale: 1.08 }}
