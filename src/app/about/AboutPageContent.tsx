@@ -571,7 +571,7 @@ export default function AboutPageContent() {
               >
                 <div className="aspect-[4/5] overflow-hidden border-b border-white/10 relative">
                   <motion.img
-                    src="./images/programmer1.png"
+                    src="./images/programmer1.jepg"
                     alt="Full Stack Developer"
                     className="w-full h-full object-cover"
                     whileHover={{ scale: 1.08 }}
