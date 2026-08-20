@@ -133,11 +133,9 @@ export default function WorkPageContent({
           Portfolio
         </span>
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6 tracking-tight">
-          Selected Work
+          Our Work
         </h1>
         <p className="text-white/50 font-sans text-base md:text-lg max-w-2xl leading-relaxed">
-          A curated collection of brand identity, visual identity, and graphic
-          design projects.
         </p>
       </div>
       <div className="h-px bg-white/10 mb-16" />
